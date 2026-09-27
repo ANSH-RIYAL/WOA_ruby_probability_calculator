@@ -90,25 +90,23 @@ def build_ccdf_curve(sorted_totals: np.ndarray, threshold: float) -> dict:
     return {"domain_max": domain_max, "points": points}
 
 
-def build_pmf(sorted_totals: np.ndarray, max_bars: int = 10) -> list[dict]:
-    """Probability of landing on each of the most likely discrete outcomes,
-    plus a single aggregate bar for everything else."""
+def build_pmf(sorted_totals: np.ndarray, max_individual: int = 8) -> list[dict]:
+    """PMF bars in ascending outcome order: the smallest reachable totals shown
+    individually, with everything above the largest of those folded into one
+    trailing '> cutoff' bar. Unlike a top-N-by-probability selection, this stays
+    contiguous and monotonic, so the tail bucket's threshold (and how much
+    probability sits above it) visibly shifts as the ticket count changes."""
     vals, counts = np.unique(sorted_totals, return_counts=True)
     probs = counts / len(sorted_totals)
 
-    order = np.argsort(-probs)
-    keep = order[:max_bars]
-    kept_vals = vals[keep]
-    kept_probs = probs[keep]
-    rest_prob = max(0.0, 1.0 - float(kept_probs.sum()))
+    if len(vals) <= max_individual:
+        return [{"value": float(v), "prob": float(p), "tail_from": None} for v, p in zip(vals, probs)]
 
-    sort_order = np.argsort(kept_vals)
-    bars = [
-        {"value": float(kept_vals[i]), "prob": float(kept_probs[i]), "label": None}
-        for i in sort_order
-    ]
-    if rest_prob > 1e-9:
-        bars.append({"value": None, "prob": rest_prob, "label": "Other outcomes"})
+    bars = [{"value": float(vals[i]), "prob": float(probs[i]), "tail_from": None} for i in range(max_individual)]
+    cutoff = float(vals[max_individual - 1])
+    shown_prob = float(probs[:max_individual].sum())
+    rest_prob = max(0.0, 1.0 - shown_prob)
+    bars.append({"value": None, "prob": rest_prob, "tail_from": cutoff})
     return bars
 
 

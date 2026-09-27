@@ -20,7 +20,7 @@
         "unit": "rubies",
         "source_file": "WoA 2024 + Boxes.xlsx",
         "verified_formula": "AE39 = (AF6*50000)+(AF10*100000)+(AF14*150000)+(AF18*300000)+(AF22*400000)+(AF26*500000)+(AF30*600000)+(AF34*800000)+(AF38*1000000), where each AF_row = (tickets in that tier's bucket) * 0.144 * (day_fraction/360)",
-        "confidence": "Verified: the ruby-gem reward icon (embedded in the workbook, column AF) prints its exact jackpot amount for each tier (50,000 through 1,000,000), matching this formula's own multipliers exactly.",
+        "confidence": "Verified: the ruby-gem reward icon (embedded in the workbook, column AF) prints its exact jackpot amount for each tier (50,000 through 1,000,000), matching this formula's own multipliers exactly, tier by tier.",
         "caveat": "The workbook's separate 'Chances' sheet models a different key/pity bonus-redemption system (gold, resources, VIP points) confirmed via its icons to carry no ruby rewards, so it's excluded here."
       },
       "per_tier": [
@@ -34,27 +34,24 @@
         { "p": 0.0016, "amount": 800000 },
         { "p": 0.0004, "amount": 1000000 }
       ]
+    }
+  },
+  "_unverified_reward_candidates": {
+    "note": "Removed from the live app after the Construction Tokens label was confirmed wrong. These three OTHER reward columns have the same kind of formula-vs-icon cross-check that made rubies trustworthy (the icon prints the exact same number as the formula's per-tier multiplier), so the QUANTITIES below are reliable -- what's still unknown is what real in-game item each one actually is. Re-add to 'rewards' above once identified.",
+    "hammers_icon": {
+      "column": "AK", "icon": "crossed hammers on an octagon badge",
+      "per_tier_amount": [16, 32, 64, 96, 128, 160, 192, 256, 320],
+      "per_tier_p": [0.0048, 0.0048, 0.0048, 0.0048, 0.0048, 0.0048, 0.0048, 0.0048, 0.0049333333]
     },
-    "construction_tokens": {
-      "meta": {
-        "label": "Construction Tokens",
-        "unit": "tokens",
-        "source_file": "WoA 2024 + Boxes.xlsx",
-        "verified_formula": "AH39 = AH6+AH10+AH14+AH18+AH22+AH26+AH30+AH34+AH38, where each AH_row = (tickets in that tier's bucket) * 0.144 * (day_fraction/360); unlike rubies this column is a flat sum (amount = 1 token per hit at every tier).",
-        "confidence": "Inferred: column AH's reward icon is a castle/building silhouette badge with a '+' (an instant-construction token, per standard Goodgame Empire iconography), appearing at every box tier. Less certain than the rubies identification, since this icon doesn't print a literal token count the way the ruby icon prints its ruby amount.",
-        "caveat": "Treat this series as a good-faith reconstruction rather than a confirmed 1:1 mapping; the badge number visible on the icon looks like a building-level indicator, not a reward quantity, so it was not used as an amount multiplier."
-      },
-      "per_tier": [
-        { "p": 0.0048, "amount": 1 },
-        { "p": 0.0048, "amount": 1 },
-        { "p": 0.0048, "amount": 1 },
-        { "p": 0.0048, "amount": 1 },
-        { "p": 0.0048, "amount": 1 },
-        { "p": 0.0048, "amount": 1 },
-        { "p": 0.0048, "amount": 1 },
-        { "p": 0.0048, "amount": 1 },
-        { "p": 0.0049333333, "amount": 1 }
-      ]
+    "boost_arrow_icon": {
+      "column": "AL", "icon": "upward arrow with a '+' in a circular badge (exactly 2x the hammers column)",
+      "per_tier_amount": [32, 64, 128, 192, 256, 320, 384, 512, 640],
+      "per_tier_p": [0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096]
+    },
+    "stone_shard_icon": {
+      "column": "AM", "icon": "cracked grey stone tablet/shard on a hexagon badge",
+      "per_tier_amount": [20, 30, 40, 50, 60, 70, 80, 90, 100],
+      "per_tier_p": [0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096]
     }
   }
 }

@@ -125,22 +125,24 @@
       var cx = PAD.l + slot * (i + 0.5);
       var y = yScale(b.prob);
       var h = (CH - PAD.b) - y;
+      var isTail = b.value === null && b.tail_from !== null;
       var rect = W.svgEl('rect', {
         x: cx - barW / 2, y: y, width: barW, height: Math.max(1, h),
-        rx: 3, class: 'bar-rect' + (b.value === null ? ' other' : '')
+        rx: 3, class: 'bar-rect' + (isTail ? ' other' : '')
       });
-      var label = b.value === null ? (b.label || 'Other') : W.fmtCompact(b.value);
+      var axisLabel = isTail ? ('>' + W.fmtCompact(b.tail_from)) : W.fmtCompact(b.value);
+      var tooltipLabel = isTail ? ('more than ' + W.fmt(b.tail_from) + ' rubies') : (W.fmt(b.value) + ' rubies');
       rect.addEventListener('pointerenter', function () {
         pmfTooltip.style.opacity = 1;
         pmfTooltip.style.left = (cx / CW * 100) + '%';
         pmfTooltip.style.top = (y / CH * 100) + '%';
-        pmfTooltip.textContent = label + ' rubies: ' + W.fmtPct(b.prob);
+        pmfTooltip.textContent = tooltipLabel + ': ' + W.fmtPct(b.prob);
       });
       rect.addEventListener('pointerleave', function () { pmfTooltip.style.opacity = 0; });
       pmfBars.appendChild(rect);
 
       var lbl = W.svgEl('text', { x: cx, y: CH - PAD.b + 16, class: 'axis-label', 'text-anchor': 'middle' });
-      lbl.textContent = label;
+      lbl.textContent = axisLabel;
       pmfBars.appendChild(lbl);
     });
   }

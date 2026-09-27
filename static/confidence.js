@@ -45,7 +45,7 @@
 
   function renderCards(rewardsData) {
     elCards.innerHTML = '';
-    ['rubies', 'construction_tokens'].forEach(function (key) {
+    Object.keys(rewardsData).forEach(function (key) {
       var r = rewardsData[key];
       if (!r) return;
       var card = document.createElement('div');
@@ -94,9 +94,8 @@
       rewards = data.rewards;
       elMetaCaveat.innerHTML =
         'Model reconstructed from <code>WoA 2024 + Boxes.xlsx</code>. ' +
-        (rewards.construction_tokens && rewards.construction_tokens.meta
-          ? rewards.construction_tokens.meta.confidence + ' ' + rewards.construction_tokens.meta.caveat
-          : '');
+        (rewards.rubies && rewards.rubies.meta ? rewards.rubies.meta.confidence : '') +
+        ' Only reward types with a verified icon-to-formula match are shown here — see the project README for other reward columns whose quantities are reliable but whose real in-game name is still unconfirmed.';
       lastTickets = W.initTicketInputs(function (tickets) { lastTickets = tickets; fetchAndRender(tickets); });
       fetchAndRender(lastTickets);
     });
