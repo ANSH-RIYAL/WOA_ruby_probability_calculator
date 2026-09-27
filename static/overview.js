@@ -2,20 +2,36 @@
   "use strict";
   var W = window.WOA;
 
+  var REWARD_UI = {
+    rubies: { defaultThreshold: 500000, step: 10000, chips: [100000, 500000, 1000000, 2000000] },
+    construction_tokens: { defaultThreshold: 500, step: 50, chips: [100, 250, 500, 1000] },
+    upgrade_tokens: { defaultThreshold: 1000, step: 100, chips: [250, 500, 1000, 2000] },
+    sceats: { defaultThreshold: 500, step: 50, chips: [100, 250, 500, 1000] }
+  };
+
+  var elRewardSelect = document.getElementById('rewardSelect');
   var elThreshold = document.getElementById('threshold');
+  var elThresholdUnit = document.getElementById('thresholdUnit');
+  var elThresholdChips = document.getElementById('thresholdChips');
   var elResim = document.getElementById('resim');
   var elLadderBody = document.querySelector('#ladderTable tbody');
+  var elLadderAmountHead = document.getElementById('ladderAmountHead');
   var elMetaCaveat = document.getElementById('metaCaveat');
+  var elPageTitle = document.getElementById('pageTitle');
   var elStatMean = document.getElementById('statMean');
   var elStatMedian = document.getElementById('statMedian');
   var elStatAny = document.getElementById('statAny');
   var elStatThresh = document.getElementById('statThresh');
   var elStatThreshLabel = document.getElementById('statThreshLabel');
   var elTrialsLabel = document.getElementById('trialsLabel');
+  var elUnitLabels = document.querySelectorAll('.unit-label');
 
   var ladder = [];
-  var rewardMeta = null;
+  var allRewards = {};
+  var currentReward = 'rubies';
+  var currentUnit = 'rubies';
   var inFlightController = null;
+  var lastTickets = 2000;
 
   // ---- CCDF (probability of at least X) ----
   var ccdfSvg = document.getElementById('ccdf');
@@ -30,7 +46,6 @@
   var ccdfTooltip = document.getElementById('ccdfTooltip');
 
   // ---- PMF (distribution of outcomes) ----
-  var pmfSvg = document.getElementById('pmf');
   var pmfBars = document.getElementById('pmfBars');
   var pmfYAxis = document.getElementById('pmfYAxis');
   var pmfGrid = document.getElementById('pmfGrid');
@@ -99,7 +114,7 @@
       ccdfTooltip.style.opacity = 1;
       ccdfTooltip.style.left = (px / CW * 100) + '%';
       ccdfTooltip.style.top = (yScale(f) / CH * 100) + '%';
-      ccdfTooltip.textContent = '≥ ' + W.fmt(v) + ' rubies: ' + W.fmtPct(f);
+      ccdfTooltip.textContent = '≥ ' + W.fmt(v) + ' ' + currentUnit + ': ' + W.fmtPct(f);
     };
     ccdfSvg.onpointerleave = function () { ccdfTooltip.style.opacity = 0; ccdfHoverLine.style.opacity = 0; };
   }
@@ -131,7 +146,7 @@
         rx: 3, class: 'bar-rect' + (isTail ? ' other' : '')
       });
       var axisLabel = isTail ? ('>' + W.fmtCompact(b.tail_from)) : W.fmtCompact(b.value);
-      var tooltipLabel = isTail ? ('more than ' + W.fmt(b.tail_from) + ' rubies') : (W.fmt(b.value) + ' rubies');
+      var tooltipLabel = isTail ? ('more than ' + W.fmt(b.tail_from) + ' ' + currentUnit) : (W.fmt(b.value) + ' ' + currentUnit);
       rect.addEventListener('pointerenter', function () {
         pmfTooltip.style.opacity = 1;
         pmfTooltip.style.left = (cx / CW * 100) + '%';
@@ -148,11 +163,11 @@
   }
 
   function applyResult(data) {
-    W.renderLadder(elLadderBody, ladder, data.boxes_per_tier, rewardMeta);
-    elStatMean.textContent = W.fmt(data.expected_rubies);
-    elStatMean.title = Math.round(data.expected_rubies).toLocaleString('en-US') + ' rubies (exact expected value)';
-    elStatMedian.textContent = W.fmt(data.median_rubies);
-    elStatAny.textContent = W.fmtPct(data.p_any_jackpot);
+    W.renderLadder(elLadderBody, ladder, data.boxes_per_tier, allRewards[currentReward]);
+    elStatMean.textContent = W.fmt(data.expected_amount);
+    elStatMean.title = Math.round(data.expected_amount).toLocaleString('en-US') + ' ' + currentUnit + ' (exact expected value)';
+    elStatMedian.textContent = W.fmt(data.median_amount);
+    elStatAny.textContent = W.fmtPct(data.p_any_reward);
     elStatThreshLabel.textContent = W.fmt(data.threshold);
     elStatThresh.textContent = W.fmtPct(data.p_at_least_threshold);
     elTrialsLabel.textContent = data.trials.toLocaleString('en-US');
@@ -166,7 +181,7 @@
     if (inFlightController) inFlightController.abort();
     inFlightController = new AbortController();
 
-    var params = new URLSearchParams({ tickets: tickets, threshold: threshold, reward: 'rubies' });
+    var params = new URLSearchParams({ tickets: tickets, threshold: threshold, reward: currentReward });
     if (opts && opts.fresh) params.set('seed', String(Math.floor(Math.random() * 1e9)));
 
     fetch('/api/calculate?' + params.toString(), { signal: inFlightController.signal })
@@ -175,26 +190,57 @@
       .catch(function (err) { if (err.name !== 'AbortError') console.error(err); });
   }
 
-  var lastTickets = 2000;
+  function applyRewardUi(rewardKey) {
+    currentReward = rewardKey;
+    var meta = allRewards[rewardKey].meta;
+    currentUnit = meta.unit;
+    var ui = REWARD_UI[rewardKey] || { defaultThreshold: 100, step: 10, chips: [50, 100, 250, 500] };
+
+    elPageTitle.textContent = meta.label + ' overview';
+    elUnitLabels.forEach(function (el) { el.textContent = meta.unit; });
+    elThresholdUnit.textContent = meta.unit;
+    elLadderAmountHead.textContent = meta.label;
+    elThreshold.step = ui.step;
+    elThreshold.value = ui.defaultThreshold;
+
+    elThresholdChips.innerHTML = '';
+    ui.chips.forEach(function (amt) {
+      var btn = document.createElement('button');
+      btn.className = 'chip'; btn.type = 'button'; btn.setAttribute('data-amt', amt);
+      btn.textContent = W.fmtCompact(amt);
+      btn.addEventListener('click', function () { elThreshold.value = amt; fetchAndRender(lastTickets); });
+      elThresholdChips.appendChild(btn);
+    });
+
+    elMetaCaveat.innerHTML = 'Model reconstructed from <code>WoA 2024 + Boxes.xlsx</code>. ' +
+      (meta.confidence || '') + (meta.caveat ? ' ' + meta.caveat : '');
+  }
+
   elThreshold.addEventListener('input', function () {
     clearTimeout(elThreshold._t);
     elThreshold._t = setTimeout(function () { fetchAndRender(lastTickets); }, 250);
   });
   elResim.addEventListener('click', function () { fetchAndRender(lastTickets, { fresh: true }); });
-  document.querySelectorAll('.chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      elThreshold.value = chip.getAttribute('data-amt');
-      fetchAndRender(lastTickets);
-    });
+  elRewardSelect.addEventListener('change', function () {
+    applyRewardUi(elRewardSelect.value);
+    fetchAndRender(lastTickets);
   });
 
   fetch('/api/model')
     .then(function (r) { return r.json(); })
     .then(function (data) {
       ladder = data.ladder;
-      rewardMeta = data.rewards.rubies;
-      elMetaCaveat.innerHTML = 'Model reconstructed from <code>WoA 2024 + Boxes.xlsx</code>. ' +
-        (rewardMeta.meta && rewardMeta.meta.caveat ? rewardMeta.meta.caveat : '');
+      allRewards = data.rewards;
+
+      elRewardSelect.innerHTML = '';
+      Object.keys(allRewards).forEach(function (key) {
+        var opt = document.createElement('option');
+        opt.value = key; opt.textContent = allRewards[key].meta.label;
+        elRewardSelect.appendChild(opt);
+      });
+      elRewardSelect.value = 'rubies';
+      applyRewardUi('rubies');
+
       lastTickets = W.initTicketInputs(function (tickets) { lastTickets = tickets; fetchAndRender(tickets); });
       fetchAndRender(lastTickets);
     });

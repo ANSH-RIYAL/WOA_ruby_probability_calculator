@@ -32,6 +32,11 @@
     </nav>
 
     <div class="field">
+      <label for="rewardSelect">Reward type</label>
+      <select id="rewardSelect" class="reward-select"></select>
+    </div>
+
+    <div class="field">
       <label for="tickets">Affluence tickets to spend</label>
       <input type="number" id="tickets" min="0" step="10" value="2000" inputmode="numeric">
       <input type="range" id="ticketsRange" min="0" max="5000" step="10" value="2000" aria-label="Tickets slider">
@@ -41,14 +46,9 @@
       <label for="threshold">Chance of at least…</label>
       <div class="threshold-row">
         <input type="number" id="threshold" min="0" step="10000" value="500000" inputmode="numeric">
-        <span>rubies</span>
+        <span id="thresholdUnit">rubies</span>
       </div>
-      <div class="chips">
-        <button class="chip" type="button" data-amt="100000">100K</button>
-        <button class="chip" type="button" data-amt="500000">500K</button>
-        <button class="chip" type="button" data-amt="1000000">1M</button>
-        <button class="chip" type="button" data-amt="2000000">2M</button>
-      </div>
+      <div class="chips" id="thresholdChips"></div>
     </div>
 
     <button id="resim" class="ghost-btn" type="button">↻ Re-roll simulation</button>
@@ -57,7 +57,7 @@
       <summary>The 9-tier box ladder</summary>
       <div style="overflow-x:auto;">
       <table class="ladder-table" id="ladderTable">
-        <thead><tr><th>Tier</th><th>Cumulative tix</th><th>Jackpot</th><th>Odds/box</th><th>Your boxes</th></tr></thead>
+        <thead><tr><th>Tier</th><th>Cumulative tix</th><th id="ladderAmountHead">Reward</th><th>Odds/box</th><th>Your boxes</th></tr></thead>
         <tbody></tbody>
       </table>
       </div>
@@ -67,14 +67,14 @@
 
   <main class="content">
     <header class="page-head">
-      <h2>Ruby jackpot overview</h2>
-      <p>Every affluence ticket opens one box. As your total spend climbs the nine-tier ladder, the box you open — and its shot at a ruby jackpot — gets bigger. All numbers below are computed server-side from the workbook's own formulas.</p>
+      <h2 id="pageTitle">Reward overview</h2>
+      <p>Every affluence ticket opens one box. As your total spend climbs the nine-tier ladder, the box you open — and its shot at a reward — gets bigger. All numbers below are computed server-side from the workbook's own formulas.</p>
     </header>
 
     <section class="panel">
       <div class="stat-grid">
         <div class="stat-tile hero-stat">
-          <span class="stat-label">Expected rubies</span>
+          <span class="stat-label">Expected <span class="unit-label">rubies</span></span>
           <span class="stat-value" id="statMean">—</span>
         </div>
         <div class="stat-tile">
@@ -82,7 +82,7 @@
           <span class="stat-value" id="statMedian">—</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-label">Chance of any jackpot</span>
+          <span class="stat-label">Chance of any reward</span>
           <span class="stat-value" id="statAny">—</span>
         </div>
         <div class="stat-tile highlight">
@@ -95,11 +95,11 @@
     <section class="charts-grid">
       <div class="panel chart-card">
         <div class="chart-head">
-          <h2>Probability of at least X rubies</h2>
+          <h2>Probability of at least X <span class="unit-label">rubies</span></h2>
           <p class="chart-sub"><span id="trialsLabel">30,000</span> simulated runs · hover to read any point</p>
         </div>
         <div class="chart-wrap">
-          <svg id="ccdf" class="chart-svg" viewBox="0 0 640 300" role="img" aria-label="Probability of reaching at least a given ruby total">
+          <svg id="ccdf" class="chart-svg" viewBox="0 0 640 300" role="img" aria-label="Probability of reaching at least a given reward total">
             <defs>
               <linearGradient id="rubyGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0" stop-color="var(--ruby)" stop-opacity="0.35"/>
@@ -121,11 +121,11 @@
 
       <div class="panel chart-card">
         <div class="chart-head">
-          <h3>Distribution of rubies won</h3>
-          <p class="chart-sub">Most likely outcomes at this ticket count — everything rare is folded into "Other"</p>
+          <h3>Distribution of <span class="unit-label">rubies</span> won</h3>
+          <p class="chart-sub">Most likely outcomes at this ticket count — the long tail is folded into one "&gt; cutoff" bar</p>
         </div>
         <div class="chart-wrap">
-          <svg id="pmf" class="chart-svg" viewBox="0 0 640 300" role="img" aria-label="Probability of each ruby outcome">
+          <svg id="pmf" class="chart-svg" viewBox="0 0 640 300" role="img" aria-label="Probability of each reward outcome">
             <g id="pmfGrid"></g>
             <g id="pmfBars"></g>
             <g id="pmfYAxis"></g>
@@ -138,7 +138,7 @@
 </div>
 
 <footer>
-  Numbers reflect the workbook's own reward table (ticket-to-tier ladder, per-box odds, ruby jackpot sizes). The curves are Monte Carlo simulations run by the API — they converge on the workbook's own exact expected value. · <a href="/docs">API docs</a>
+  Numbers reflect the workbook's own reward table (ticket-to-tier ladder, per-box odds, reward sizes) for the four reward types whose icon prints the same number as its formula. The curves are Monte Carlo simulations run by the API — they converge on the workbook's own exact expected value. · <a href="/docs">API docs</a>
   <span class="byline">commit by Kagemune911</span>
 </footer>
 

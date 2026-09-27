@@ -20,8 +20,8 @@
         "unit": "rubies",
         "source_file": "WoA 2024 + Boxes.xlsx",
         "verified_formula": "AE39 = (AF6*50000)+(AF10*100000)+(AF14*150000)+(AF18*300000)+(AF22*400000)+(AF26*500000)+(AF30*600000)+(AF34*800000)+(AF38*1000000), where each AF_row = (tickets in that tier's bucket) * 0.144 * (day_fraction/360)",
-        "confidence": "Verified: the ruby-gem reward icon (embedded in the workbook, column AF) prints its exact jackpot amount for each tier (50,000 through 1,000,000), matching this formula's own multipliers exactly, tier by tier.",
-        "caveat": "The workbook's separate 'Chances' sheet models a different key/pity bonus-redemption system (gold, resources, VIP points) confirmed via its icons to carry no ruby rewards, so it's excluded here."
+        "confidence": "Verified: the ruby-gem reward icon (column AF) prints the exact same amount as the formula's per-tier multiplier (50,000 through 1,000,000), tier by tier.",
+        "caveat": "The workbook's separate 'Chances' sheet models a different key/pity bonus-redemption system confirmed via its icons to carry no ruby rewards, so it's excluded here."
       },
       "per_tier": [
         { "p": 0.0016, "amount": 50000 },
@@ -34,24 +34,69 @@
         { "p": 0.0016, "amount": 800000 },
         { "p": 0.0004, "amount": 1000000 }
       ]
-    }
-  },
-  "_unverified_reward_candidates": {
-    "note": "Removed from the live app after the Construction Tokens label was confirmed wrong. These three OTHER reward columns have the same kind of formula-vs-icon cross-check that made rubies trustworthy (the icon prints the exact same number as the formula's per-tier multiplier), so the QUANTITIES below are reliable -- what's still unknown is what real in-game item each one actually is. Re-add to 'rewards' above once identified.",
-    "hammers_icon": {
-      "column": "AK", "icon": "crossed hammers on an octagon badge",
-      "per_tier_amount": [16, 32, 64, 96, 128, 160, 192, 256, 320],
-      "per_tier_p": [0.0048, 0.0048, 0.0048, 0.0048, 0.0048, 0.0048, 0.0048, 0.0048, 0.0049333333]
     },
-    "boost_arrow_icon": {
-      "column": "AL", "icon": "upward arrow with a '+' in a circular badge (exactly 2x the hammers column)",
-      "per_tier_amount": [32, 64, 128, 192, 256, 320, 384, 512, 640],
-      "per_tier_p": [0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096]
+    "construction_tokens": {
+      "meta": {
+        "label": "Construction Tokens",
+        "unit": "tokens",
+        "source_file": "WoA 2024 + Boxes.xlsx",
+        "verified_formula": "AK39 = (AK6*16)+(AK10*32)+(AK14*64)+(AK18*96)+(AK22*128)+(AK26*160)+(AK30*192)+(AK34*256)+(AK38*320)",
+        "confidence": "Verified: the crossed-hammers reward icon (column AK) prints the exact same amount as the formula's per-tier multiplier (16 through 320), tier by tier. Identity confirmed by user.",
+        "caveat": null
+      },
+      "per_tier": [
+        { "p": 0.0048, "amount": 16 },
+        { "p": 0.0048, "amount": 32 },
+        { "p": 0.0048, "amount": 64 },
+        { "p": 0.0048, "amount": 96 },
+        { "p": 0.0048, "amount": 128 },
+        { "p": 0.0048, "amount": 160 },
+        { "p": 0.0048, "amount": 192 },
+        { "p": 0.0048, "amount": 256 },
+        { "p": 0.0049333333, "amount": 320 }
+      ]
     },
-    "stone_shard_icon": {
-      "column": "AM", "icon": "cracked grey stone tablet/shard on a hexagon badge",
-      "per_tier_amount": [20, 30, 40, 50, 60, 70, 80, 90, 100],
-      "per_tier_p": [0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096, 0.0096]
+    "upgrade_tokens": {
+      "meta": {
+        "label": "Upgrade Tokens",
+        "unit": "tokens",
+        "source_file": "WoA 2024 + Boxes.xlsx",
+        "verified_formula": "AL39 = (AL6*32)+(AL10*64)+(AL14*128)+(AL18*192)+(AL22*256)+(AL26*320)+(AL30*384)+(AL34*512)+(AL38*640)",
+        "confidence": "Verified: the upward-arrow-in-a-circle reward icon (column AL) prints the exact same amount as the formula's per-tier multiplier (32 through 640 -- exactly double the Construction Tokens column), tier by tier. Identity confirmed by user.",
+        "caveat": null
+      },
+      "per_tier": [
+        { "p": 0.0096, "amount": 32 },
+        { "p": 0.0096, "amount": 64 },
+        { "p": 0.0096, "amount": 128 },
+        { "p": 0.0096, "amount": 192 },
+        { "p": 0.0096, "amount": 256 },
+        { "p": 0.0096, "amount": 320 },
+        { "p": 0.0096, "amount": 384 },
+        { "p": 0.0096, "amount": 512 },
+        { "p": 0.0096, "amount": 640 }
+      ]
+    },
+    "sceats": {
+      "meta": {
+        "label": "Sceats",
+        "unit": "sceats",
+        "source_file": "WoA 2024 + Boxes.xlsx",
+        "verified_formula": "AM39 = (AM6*20)+(AM10*30)+(AM14*40)+(AM18*50)+(AM22*60)+(AM26*70)+(AM30*80)+(AM34*90)+(AM38*100)",
+        "confidence": "Verified: the cracked-stone-shard reward icon (column AM) prints the exact same amount as the formula's per-tier multiplier (20 through 100), tier by tier. Identity confirmed by user.",
+        "caveat": null
+      },
+      "per_tier": [
+        { "p": 0.0096, "amount": 20 },
+        { "p": 0.0096, "amount": 30 },
+        { "p": 0.0096, "amount": 40 },
+        { "p": 0.0096, "amount": 50 },
+        { "p": 0.0096, "amount": 60 },
+        { "p": 0.0096, "amount": 70 },
+        { "p": 0.0096, "amount": 80 },
+        { "p": 0.0096, "amount": 90 },
+        { "p": 0.0096, "amount": 100 }
+      ]
     }
   }
 }
