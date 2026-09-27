@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wheel of Affluence Odds — Confidence Intervals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-icon" viewBox="0 0 56 56" aria-hidden="true">
+        <polygon points="28,4 44,16 38,50 18,50 12,16" fill="var(--ruby)"/>
+        <polygon points="28,4 44,16 28,24 12,16" fill="var(--ruby-2)"/>
+        <polygon points="28,24 44,16 38,50 28,50" fill="var(--ruby-2)" opacity=".55"/>
+        <polygon points="20,16 36,16 28,24" fill="#ffffff" opacity=".35"/>
+      </svg>
+      <div>
+        <p class="eyebrow">Goodgame Empire</p>
+        <h1 class="brand-title">Wheel of Affluence</h1>
+      </div>
+    </div>
+
+    <nav class="nav-tabs">
+      <a href="/" class="nav-tab">Overview</a>
+      <a href="/confidence" class="nav-tab active">Confidence Intervals</a>
+    </nav>
+
+    <div class="field">
+      <label for="tickets">Affluence tickets to spend</label>
+      <input type="number" id="tickets" min="0" step="10" value="2000" inputmode="numeric">
+      <input type="range" id="ticketsRange" min="0" max="20000" step="10" value="2000" aria-label="Tickets slider">
+    </div>
+
+    <details class="ladder-details" open>
+      <summary>The 9-tier box ladder</summary>
+      <div style="overflow-x:auto;">
+      <table class="ladder-table" id="ladderTable">
+        <thead><tr><th>Tier</th><th>Cumulative tix</th><th>Ruby jackpot</th><th>Odds/box</th><th>Your boxes</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      </div>
+      <p class="fineprint" id="metaCaveat"></p>
+    </details>
+  </aside>
+
+  <main class="content">
+    <header class="page-head">
+      <h2>95% confidence intervals</h2>
+      <p>For your ticket count, the range a run will land in 95% of the time (2.5th to 97.5th percentile), for each reward type the ladder pays out. The dot marks the exact expected value.</p>
+    </header>
+
+    <section class="ci-grid" id="ciCards">
+      <!-- populated by confidence.js -->
+    </section>
+
+    <section class="panel">
+      <p class="confidence-caveat"><span id="trialsLabel">30,000</span> simulated runs per reward type at this ticket count.</p>
+    </section>
+  </main>
+</div>
+
+<footer>
+  Numbers reflect the workbook's own reward table. Rubies are verified against the workbook's printed jackpot amounts; Construction Tokens are a good-faith reconstruction from the sheet's reward icon, not a literal printed value — see the sidebar note.
+  <span class="byline">commit by Kagemune911</span>
+</footer>
+
+<script src="/static/common.js"></script>
+<script src="/static/confidence.js"></script>
+</body>
+</html>

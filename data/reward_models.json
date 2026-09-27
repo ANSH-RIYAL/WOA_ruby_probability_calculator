@@ -1,0 +1,60 @@
+{
+  "ladder": {
+    "note": "Every affluence ticket opens exactly one box. Which of 9 tiers depends only on cumulative tickets spent this event (a one-time ladder; tiers 1-8 fill once in order, tier 9 is uncapped past 390 cumulative tickets).",
+    "tiers": [
+      { "tier": 1, "start": 0,   "end": 10 },
+      { "tier": 2, "start": 10,  "end": 30 },
+      { "tier": 3, "start": 30,  "end": 60 },
+      { "tier": 4, "start": 60,  "end": 100 },
+      { "tier": 5, "start": 100, "end": 150 },
+      { "tier": 6, "start": 150, "end": 210 },
+      { "tier": 7, "start": 210, "end": 290 },
+      { "tier": 8, "start": 290, "end": 390 },
+      { "tier": 9, "start": 390, "end": null }
+    ]
+  },
+  "rewards": {
+    "rubies": {
+      "meta": {
+        "label": "Rubies",
+        "unit": "rubies",
+        "source_file": "WoA 2024 + Boxes.xlsx",
+        "verified_formula": "AE39 = (AF6*50000)+(AF10*100000)+(AF14*150000)+(AF18*300000)+(AF22*400000)+(AF26*500000)+(AF30*600000)+(AF34*800000)+(AF38*1000000), where each AF_row = (tickets in that tier's bucket) * 0.144 * (day_fraction/360)",
+        "confidence": "Verified: the ruby-gem reward icon (embedded in the workbook, column AF) prints its exact jackpot amount for each tier (50,000 through 1,000,000), matching this formula's own multipliers exactly.",
+        "caveat": "The workbook's separate 'Chances' sheet models a different key/pity bonus-redemption system (gold, resources, VIP points) confirmed via its icons to carry no ruby rewards, so it's excluded here."
+      },
+      "per_tier": [
+        { "p": 0.0016, "amount": 50000 },
+        { "p": 0.0016, "amount": 100000 },
+        { "p": 0.0016, "amount": 150000 },
+        { "p": 0.0016, "amount": 300000 },
+        { "p": 0.0016, "amount": 400000 },
+        { "p": 0.0016, "amount": 500000 },
+        { "p": 0.0016, "amount": 600000 },
+        { "p": 0.0016, "amount": 800000 },
+        { "p": 0.0004, "amount": 1000000 }
+      ]
+    },
+    "construction_tokens": {
+      "meta": {
+        "label": "Construction Tokens",
+        "unit": "tokens",
+        "source_file": "WoA 2024 + Boxes.xlsx",
+        "verified_formula": "AH39 = AH6+AH10+AH14+AH18+AH22+AH26+AH30+AH34+AH38, where each AH_row = (tickets in that tier's bucket) * 0.144 * (day_fraction/360); unlike rubies this column is a flat sum (amount = 1 token per hit at every tier).",
+        "confidence": "Inferred: column AH's reward icon is a castle/building silhouette badge with a '+' (an instant-construction token, per standard Goodgame Empire iconography), appearing at every box tier. Less certain than the rubies identification, since this icon doesn't print a literal token count the way the ruby icon prints its ruby amount.",
+        "caveat": "Treat this series as a good-faith reconstruction rather than a confirmed 1:1 mapping; the badge number visible on the icon looks like a building-level indicator, not a reward quantity, so it was not used as an amount multiplier."
+      },
+      "per_tier": [
+        { "p": 0.0048, "amount": 1 },
+        { "p": 0.0048, "amount": 1 },
+        { "p": 0.0048, "amount": 1 },
+        { "p": 0.0048, "amount": 1 },
+        { "p": 0.0048, "amount": 1 },
+        { "p": 0.0048, "amount": 1 },
+        { "p": 0.0048, "amount": 1 },
+        { "p": 0.0048, "amount": 1 },
+        { "p": 0.0049333333, "amount": 1 }
+      ]
+    }
+  }
+}

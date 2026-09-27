@@ -1,11 +1,12 @@
-"""Ruby-jackpot probability model for the Wheel of Affluence box ladder.
+"""Wheel of Affluence box-ladder probability model.
 
-Reconstructed from ``WoA 2024 + Boxes.xlsx``: every ticket spent opens exactly
-one box; the tier of that box depends only on cumulative tickets spent this
-event (a one-time ladder across 9 tiers, uncapped past 390 cumulative
-tickets); each box independently has a small chance of landing on that
-tier's fixed ruby jackpot. See data/ruby_model.json for the source numbers
-and the full derivation notes.
+Reconstructed from ``WoA 2024 + Boxes.xlsx``: every ticket spent opens
+exactly one box; the tier of that box depends only on cumulative tickets
+spent this event (a one-time ladder across 9 tiers, uncapped past 390
+cumulative tickets); each box independently has a small chance of landing
+on that tier's fixed reward slot. The ladder is shared by every reward
+type; only the per-tier odds and amounts differ. See
+data/reward_models.json for the source numbers and derivation notes.
 """
 
 import json
@@ -13,13 +14,13 @@ from pathlib import Path
 
 import numpy as np
 
-DATA_PATH = Path(__file__).parent / "data" / "ruby_model.json"
+DATA_PATH = Path(__file__).parent / "data" / "reward_models.json"
 
 with open(DATA_PATH) as f:
     _RAW = json.load(f)
 
-MODEL_META = _RAW["meta"]
-TIERS = _RAW["tiers"]  # each: {tier, start, end (or None = unbounded), amount, p}
+LADDER = _RAW["ladder"]["tiers"]  # each: {tier, start, end (None = unbounded)}
+REWARDS = _RAW["rewards"]  # name -> {meta, per_tier: [{p, amount}, ...]}
 
 MAX_TRIALS = 200_000
 DEFAULT_TRIALS = 30_000
@@ -32,26 +33,34 @@ def boxes_for_tier(tickets: int, tier: dict) -> int:
 
 
 def boxes_all_tiers(tickets: int) -> list[int]:
-    return [boxes_for_tier(tickets, t) for t in TIERS]
+    return [boxes_for_tier(tickets, t) for t in LADDER]
 
 
-def exact_mean(tickets: int) -> float:
+def _per_tier(reward: str) -> list[dict]:
+    if reward not in REWARDS:
+        raise KeyError(f"Unknown reward type: {reward!r}. Known: {list(REWARDS)}")
+    return REWARDS[reward]["per_tier"]
+
+
+def exact_mean(tickets: int, reward: str = "rubies") -> float:
     boxes = boxes_all_tiers(tickets)
-    return sum(b * t["p"] * t["amount"] for b, t in zip(boxes, TIERS))
+    per_tier = _per_tier(reward)
+    return sum(b * rt["p"] * rt["amount"] for b, rt in zip(boxes, per_tier))
 
 
-def simulate(tickets: int, trials: int = DEFAULT_TRIALS, seed: int | None = None) -> np.ndarray:
-    """Vectorized Monte Carlo: totals[i] = simulated rubies won in run i."""
+def simulate(tickets: int, reward: str = "rubies", trials: int = DEFAULT_TRIALS, seed: int | None = None) -> np.ndarray:
+    """Vectorized Monte Carlo: totals[i] = simulated reward amount won in run i."""
     trials = max(1, min(trials, MAX_TRIALS))
     rng = np.random.default_rng(seed)
     boxes = boxes_all_tiers(tickets)
+    per_tier = _per_tier(reward)
     totals = np.zeros(trials, dtype=np.float64)
-    for b, t in zip(boxes, TIERS):
-        lam = b * t["p"]
+    for b, rt in zip(boxes, per_tier):
+        lam = b * rt["p"]
         if lam <= 0:
             continue
         hits = rng.poisson(lam, size=trials)
-        totals += hits * t["amount"]
+        totals += hits * rt["amount"]
     return totals
 
 
@@ -81,25 +90,66 @@ def build_ccdf_curve(sorted_totals: np.ndarray, threshold: float) -> dict:
     return {"domain_max": domain_max, "points": points}
 
 
-def calculate(tickets: int, threshold: float, trials: int = DEFAULT_TRIALS, seed: int | None = None) -> dict:
+def build_pmf(sorted_totals: np.ndarray, max_bars: int = 10) -> list[dict]:
+    """Probability of landing on each of the most likely discrete outcomes,
+    plus a single aggregate bar for everything else."""
+    vals, counts = np.unique(sorted_totals, return_counts=True)
+    probs = counts / len(sorted_totals)
+
+    order = np.argsort(-probs)
+    keep = order[:max_bars]
+    kept_vals = vals[keep]
+    kept_probs = probs[keep]
+    rest_prob = max(0.0, 1.0 - float(kept_probs.sum()))
+
+    sort_order = np.argsort(kept_vals)
+    bars = [
+        {"value": float(kept_vals[i]), "prob": float(kept_probs[i]), "label": None}
+        for i in sort_order
+    ]
+    if rest_prob > 1e-9:
+        bars.append({"value": None, "prob": rest_prob, "label": "Other outcomes"})
+    return bars
+
+
+def calculate(tickets: int, threshold: float, reward: str = "rubies",
+              trials: int = DEFAULT_TRIALS, seed: int | None = None) -> dict:
     tickets = max(0, tickets)
     threshold = max(0.0, threshold)
 
     boxes = boxes_all_tiers(tickets)
-    mean = exact_mean(tickets)
-    totals = simulate(tickets, trials, seed)
+    mean = exact_mean(tickets, reward)
+    totals = simulate(tickets, reward, trials, seed)
     totals.sort()
-
-    curve = build_ccdf_curve(totals, threshold)
 
     return {
         "tickets": tickets,
         "threshold": threshold,
+        "reward": reward,
         "trials": len(totals),
         "boxes_per_tier": boxes,
         "expected_rubies": mean,
         "median_rubies": percentile(totals, 0.5),
         "p_any_jackpot": ccdf_at(totals, 1),
         "p_at_least_threshold": ccdf_at(totals, threshold),
-        "ccdf": curve,
+        "ccdf": build_ccdf_curve(totals, threshold),
+        "pmf": build_pmf(totals),
     }
+
+
+def confidence_intervals(tickets: int, trials: int = DEFAULT_TRIALS, seed: int | None = None) -> dict:
+    tickets = max(0, tickets)
+    boxes = boxes_all_tiers(tickets)
+    out = {}
+    for name, spec in REWARDS.items():
+        totals = simulate(tickets, name, trials, seed)
+        totals.sort()
+        out[name] = {
+            "label": spec["meta"]["label"],
+            "unit": spec["meta"]["unit"],
+            "expected": exact_mean(tickets, name),
+            "median": percentile(totals, 0.5),
+            "ci_low": percentile(totals, 0.025),
+            "ci_high": percentile(totals, 0.975),
+        }
+    return {"tickets": tickets, "trials": trials, "boxes_per_tier": boxes, "rewards": out}
